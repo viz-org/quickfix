@@ -27,10 +27,10 @@ func TestNewInitiatorKeepReconnectingAfterLogonError(t *testing.T) {
 			}
 		},
 	}
-	
+
 	settings := NewSettings()
 	sessionSettings := newSession()
-	sessionID,err :=settings.AddSession(sessionSettings)
+	sessionID, err := settings.AddSession(sessionSettings)
 	if err != nil {
 		t.Fatalf("Expected no error adding session, got %v", err)
 	}
@@ -46,16 +46,15 @@ func TestNewInitiatorKeepReconnectingAfterLogonError(t *testing.T) {
 	}
 
 	initiator.stopChan = make(chan interface{})
-	go initiator.handleConnection(s,nil,&mockDialer{})
-	
+	go initiator.handleConnection(s, nil, &mockDialer{})
 
 	select {
-		case <-ctx.Done():
-			initiator.Stop()
-			return
-		case <-time.After(10 * time.Second):
-			t.Error("retry stopped after logon error")
-			return
+	case <-ctx.Done():
+		initiator.Stop()
+		return
+	case <-time.After(10 * time.Second):
+		t.Error("retry stopped after logon error")
+		return
 	}
 }
 
@@ -73,15 +72,19 @@ func newSession() *SessionSettings {
 
 type mockApplication struct{}
 
-func (m *mockApplication) OnCreate(sessionID SessionID)                           {}
-func (m *mockApplication) OnLogon(sessionID SessionID)                            {}
-func (m *mockApplication) OnLogout(sessionID SessionID)                           {}
-func (m *mockApplication) ToAdmin(message *Message, sessionID SessionID)          {}
-func (m *mockApplication) ToApp(message *Message, sessionID SessionID) error      { return nil }
-func (m *mockApplication) FromAdmin(message *Message, sessionID SessionID) MessageRejectError { return nil }
-func (m *mockApplication) FromApp(message *Message, sessionID SessionID) MessageRejectError { return nil }
+func (m *mockApplication) OnCreate(sessionID SessionID)                      {}
+func (m *mockApplication) OnLogon(sessionID SessionID)                       {}
+func (m *mockApplication) OnLogout(sessionID SessionID)                      {}
+func (m *mockApplication) ToAdmin(message *Message, sessionID SessionID)     {}
+func (m *mockApplication) ToApp(message *Message, sessionID SessionID) error { return nil }
+func (m *mockApplication) FromAdmin(message *Message, sessionID SessionID) MessageRejectError {
+	return nil
+}
+func (m *mockApplication) FromApp(message *Message, sessionID SessionID) MessageRejectError {
+	return nil
+}
 
-type mockMessageStoreFactory struct{
+type mockMessageStoreFactory struct {
 	saveMessageAndIncrError error
 }
 
@@ -91,31 +94,33 @@ func (m *mockMessageStoreFactory) Create(sessionID SessionID) (MessageStore, err
 
 var errDBError = errors.New("db error")
 
-type mockMessageStore struct{
+type mockMessageStore struct {
 	saveMessageAndIncrError error
 }
 
-func (m *mockMessageStore) NextSenderMsgSeqNum() int                    { return 1 }
-func (m *mockMessageStore) NextTargetMsgSeqNum() int                    { return 1 }
-func (m *mockMessageStore) IncrSenderMsgSeqNum() error                  { return nil }
-func (m *mockMessageStore) IncrTargetMsgSeqNum() error                  { return nil }
-func (m *mockMessageStore) SetNextSenderMsgSeqNum(next int) error       { return nil }
-func (m *mockMessageStore) SetNextTargetMsgSeqNum(next int) error       { return nil }
-func (m *mockMessageStore) CreationTime() time.Time                     { return time.Now() }
-func (m *mockMessageStore) SaveMessage(seqNum int, msg []byte) error    { return nil }
+func (m *mockMessageStore) NextSenderMsgSeqNum() int                                 { return 1 }
+func (m *mockMessageStore) NextTargetMsgSeqNum() int                                 { return 1 }
+func (m *mockMessageStore) IncrSenderMsgSeqNum() error                               { return nil }
+func (m *mockMessageStore) IncrTargetMsgSeqNum() error                               { return nil }
+func (m *mockMessageStore) SetNextSenderMsgSeqNum(next int) error                    { return nil }
+func (m *mockMessageStore) SetNextTargetMsgSeqNum(next int) error                    { return nil }
+func (m *mockMessageStore) CreationTime() time.Time                                  { return time.Now() }
+func (m *mockMessageStore) SaveMessage(seqNum int, msg []byte) error                 { return nil }
 func (m *mockMessageStore) GetMessages(beginSeqNum, endSeqNum int) ([][]byte, error) { return nil, nil }
-func (m *mockMessageStore) Refresh() error                              { return nil }
-func (m *mockMessageStore) Reset() error                                { return nil }
-func (m *mockMessageStore) Close() error                                { return nil }
-func (m *mockMessageStore) IncrNextSenderMsgSeqNum() error {return nil}
-func (m *mockMessageStore) IncrNextTargetMsgSeqNum() error {return nil}
-func (m *mockMessageStore) IterateMessages(int, int, func([]byte) error)  error {return nil}
-func (m *mockMessageStore) SaveMessageAndIncrNextSenderMsgSeqNum(seqNum int, msg []byte) error { return m.saveMessageAndIncrError }
+func (m *mockMessageStore) Refresh() error                                           { return nil }
+func (m *mockMessageStore) Reset() error                                             { return nil }
+func (m *mockMessageStore) Close() error                                             { return nil }
+func (m *mockMessageStore) IncrNextSenderMsgSeqNum() error                           { return nil }
+func (m *mockMessageStore) IncrNextTargetMsgSeqNum() error                           { return nil }
+func (m *mockMessageStore) IterateMessages(int, int, func([]byte) error) error       { return nil }
+func (m *mockMessageStore) SaveMessageAndIncrNextSenderMsgSeqNum(seqNum int, msg []byte) error {
+	return m.saveMessageAndIncrError
+}
 func (m *mockMessageStore) SetCreationTime(time.Time) {}
 
 type mockLogFactory struct {
 	shouldFail bool
-	onEvent	func(string)
+	onEvent    func(string)
 }
 
 func (m *mockLogFactory) Create() (Log, error) {
@@ -143,28 +148,28 @@ type mockAddr struct {
 func (m *mockAddr) Network() string { return m.network }
 func (m *mockAddr) String() string  { return m.address }
 
-type mockConn struct {}
+type mockConn struct{}
 
 func (m *mockConn) Read(b []byte) (n int, err error)   { return 0, nil }
 func (m *mockConn) Write(b []byte) (n int, err error)  { return len(b), nil }
 func (m *mockConn) Close() error                       { return nil }
-func (m *mockConn) LocalAddr() net.Addr               { return &mockAddr{network: "tcp", address: "127.0.0.1:8080"} }
-func (m *mockConn) RemoteAddr() net.Addr              { return &mockAddr{network: "tcp", address: "127.0.0.1:9090"} }
-func (m *mockConn) SetDeadline(t time.Time) error     { return nil }
-func (m *mockConn) SetReadDeadline(t time.Time) error { return nil }
+func (m *mockConn) LocalAddr() net.Addr                { return &mockAddr{network: "tcp", address: "127.0.0.1:8080"} }
+func (m *mockConn) RemoteAddr() net.Addr               { return &mockAddr{network: "tcp", address: "127.0.0.1:9090"} }
+func (m *mockConn) SetDeadline(t time.Time) error      { return nil }
+func (m *mockConn) SetReadDeadline(t time.Time) error  { return nil }
 func (m *mockConn) SetWriteDeadline(t time.Time) error { return nil }
 
-func (m *mockDialer) DialContext(ctx context.Context, network, address string) (net.Conn, error){
+func (m *mockDialer) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
 	return &mockConn{}, nil
 }
 
-type mockLog struct{
+type mockLog struct {
 	onEvent func(string)
 }
 
-func (m *mockLog) OnIncoming(s []byte)      {}
-func (m *mockLog) OnOutgoing(s []byte)      {}
-func (m *mockLog) OnEvent(s string)         {
+func (m *mockLog) OnIncoming(s []byte) {}
+func (m *mockLog) OnOutgoing(s []byte) {}
+func (m *mockLog) OnEvent(s string) {
 	if m.onEvent != nil {
 		m.onEvent(s)
 	}

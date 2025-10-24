@@ -210,12 +210,11 @@ func (i *Initiator) handleConnection(session *session, tlsConfig *tls.Config, di
 
 		msgIn = make(chan fixIn)
 		msgOut = make(chan []byte)
-	
 
-		go readLoop(readWriteCtx,newParser(bufio.NewReader(netConn)), msgIn, session.log)
+		go readLoop(readWriteCtx, newParser(bufio.NewReader(netConn)), msgIn, session.log)
 		disconnected = make(chan interface{})
 		go func() {
-			writeLoop(readWriteCtx,netConn, msgOut, session.log)
+			writeLoop(readWriteCtx, netConn, msgOut, session.log)
 			if err := netConn.Close(); err != nil {
 				session.log.OnEvent(err.Error())
 			}

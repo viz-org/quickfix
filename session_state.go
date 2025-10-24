@@ -36,7 +36,7 @@ func (sm *stateMachine) Start(s *session) {
 	sm.CheckSessionTime(s, time.Now())
 }
 
-func (sm *stateMachine) Connect(session *session) error{
+func (sm *stateMachine) Connect(session *session) error {
 	// No special logon logic needed for FIX Acceptors.
 	if !session.InitiateLogon {
 		sm.setState(session, logonState{})
