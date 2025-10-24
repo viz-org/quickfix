@@ -72,15 +72,15 @@ func newSession() *SessionSettings {
 
 type mockApplication struct{}
 
-func (m *mockApplication) OnCreate(sessionID SessionID)                      {}
-func (m *mockApplication) OnLogon(sessionID SessionID)                       {}
-func (m *mockApplication) OnLogout(sessionID SessionID)                      {}
-func (m *mockApplication) ToAdmin(message *Message, sessionID SessionID)     {}
-func (m *mockApplication) ToApp(message *Message, sessionID SessionID) error { return nil }
-func (m *mockApplication) FromAdmin(message *Message, sessionID SessionID) MessageRejectError {
+func (m *mockApplication) OnCreate(_ SessionID)                {}
+func (m *mockApplication) OnLogon(_ SessionID)                 {}
+func (m *mockApplication) OnLogout(_ SessionID)                {}
+func (m *mockApplication) ToAdmin(_ *Message, _ SessionID)     {}
+func (m *mockApplication) ToApp(_ *Message, _ SessionID) error { return nil }
+func (m *mockApplication) FromAdmin(_ *Message, _ SessionID) MessageRejectError {
 	return nil
 }
-func (m *mockApplication) FromApp(message *Message, sessionID SessionID) MessageRejectError {
+func (m *mockApplication) FromApp(_ *Message, _ SessionID) MessageRejectError {
 	return nil
 }
 
@@ -88,7 +88,7 @@ type mockMessageStoreFactory struct {
 	saveMessageAndIncrError error
 }
 
-func (m *mockMessageStoreFactory) Create(sessionID SessionID) (MessageStore, error) {
+func (m *mockMessageStoreFactory) Create(_ SessionID) (MessageStore, error) {
 	return &mockMessageStore{saveMessageAndIncrError: m.saveMessageAndIncrError}, nil
 }
 
@@ -98,22 +98,22 @@ type mockMessageStore struct {
 	saveMessageAndIncrError error
 }
 
-func (m *mockMessageStore) NextSenderMsgSeqNum() int                                 { return 1 }
-func (m *mockMessageStore) NextTargetMsgSeqNum() int                                 { return 1 }
-func (m *mockMessageStore) IncrSenderMsgSeqNum() error                               { return nil }
-func (m *mockMessageStore) IncrTargetMsgSeqNum() error                               { return nil }
-func (m *mockMessageStore) SetNextSenderMsgSeqNum(next int) error                    { return nil }
-func (m *mockMessageStore) SetNextTargetMsgSeqNum(next int) error                    { return nil }
-func (m *mockMessageStore) CreationTime() time.Time                                  { return time.Now() }
-func (m *mockMessageStore) SaveMessage(seqNum int, msg []byte) error                 { return nil }
-func (m *mockMessageStore) GetMessages(beginSeqNum, endSeqNum int) ([][]byte, error) { return nil, nil }
-func (m *mockMessageStore) Refresh() error                                           { return nil }
-func (m *mockMessageStore) Reset() error                                             { return nil }
-func (m *mockMessageStore) Close() error                                             { return nil }
-func (m *mockMessageStore) IncrNextSenderMsgSeqNum() error                           { return nil }
-func (m *mockMessageStore) IncrNextTargetMsgSeqNum() error                           { return nil }
-func (m *mockMessageStore) IterateMessages(int, int, func([]byte) error) error       { return nil }
-func (m *mockMessageStore) SaveMessageAndIncrNextSenderMsgSeqNum(seqNum int, msg []byte) error {
+func (m *mockMessageStore) NextSenderMsgSeqNum() int                           { return 1 }
+func (m *mockMessageStore) NextTargetMsgSeqNum() int                           { return 1 }
+func (m *mockMessageStore) IncrSenderMsgSeqNum() error                         { return nil }
+func (m *mockMessageStore) IncrTargetMsgSeqNum() error                         { return nil }
+func (m *mockMessageStore) SetNextSenderMsgSeqNum(_ int) error                 { return nil }
+func (m *mockMessageStore) SetNextTargetMsgSeqNum(_ int) error                 { return nil }
+func (m *mockMessageStore) CreationTime() time.Time                            { return time.Now() }
+func (m *mockMessageStore) SaveMessage(_ int, _ []byte) error                  { return nil }
+func (m *mockMessageStore) GetMessages(_, _ int) ([][]byte, error)             { return nil, nil }
+func (m *mockMessageStore) Refresh() error                                     { return nil }
+func (m *mockMessageStore) Reset() error                                       { return nil }
+func (m *mockMessageStore) Close() error                                       { return nil }
+func (m *mockMessageStore) IncrNextSenderMsgSeqNum() error                     { return nil }
+func (m *mockMessageStore) IncrNextTargetMsgSeqNum() error                     { return nil }
+func (m *mockMessageStore) IterateMessages(int, int, func([]byte) error) error { return nil }
+func (m *mockMessageStore) SaveMessageAndIncrNextSenderMsgSeqNum(_ int, _ []byte) error {
 	return m.saveMessageAndIncrError
 }
 func (m *mockMessageStore) SetCreationTime(time.Time) {}
@@ -132,7 +132,7 @@ func (m *mockLogFactory) Create() (Log, error) {
 	}, nil
 }
 
-func (m *mockLogFactory) CreateSessionLog(sessionID SessionID) (Log, error) {
+func (m *mockLogFactory) CreateSessionLog(_ SessionID) (Log, error) {
 	return &mockLog{
 		onEvent: m.onEvent,
 	}, nil
@@ -150,16 +150,16 @@ func (m *mockAddr) String() string  { return m.address }
 
 type mockConn struct{}
 
-func (m *mockConn) Read(b []byte) (n int, err error)   { return 0, nil }
-func (m *mockConn) Write(b []byte) (n int, err error)  { return len(b), nil }
+func (m *mockConn) Read(_ []byte) (n int, err error)   { return 0, nil }
+func (m *mockConn) Write(_ []byte) (n int, err error)  { return 0, nil }
 func (m *mockConn) Close() error                       { return nil }
 func (m *mockConn) LocalAddr() net.Addr                { return &mockAddr{network: "tcp", address: "127.0.0.1:8080"} }
 func (m *mockConn) RemoteAddr() net.Addr               { return &mockAddr{network: "tcp", address: "127.0.0.1:9090"} }
-func (m *mockConn) SetDeadline(t time.Time) error      { return nil }
-func (m *mockConn) SetReadDeadline(t time.Time) error  { return nil }
-func (m *mockConn) SetWriteDeadline(t time.Time) error { return nil }
+func (m *mockConn) SetDeadline(_ time.Time) error      { return nil }
+func (m *mockConn) SetReadDeadline(_ time.Time) error  { return nil }
+func (m *mockConn) SetWriteDeadline(_ time.Time) error { return nil }
 
-func (m *mockDialer) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+func (m *mockDialer) DialContext(_ context.Context, _, _ string) (net.Conn, error) {
 	return &mockConn{}, nil
 }
 
@@ -167,11 +167,11 @@ type mockLog struct {
 	onEvent func(string)
 }
 
-func (m *mockLog) OnIncoming(s []byte) {}
-func (m *mockLog) OnOutgoing(s []byte) {}
+func (m *mockLog) OnIncoming(_ []byte) {}
+func (m *mockLog) OnOutgoing(_ []byte) {}
 func (m *mockLog) OnEvent(s string) {
 	if m.onEvent != nil {
 		m.onEvent(s)
 	}
 }
-func (m *mockLog) OnEventf(format string, a ...interface{}) {}
+func (m *mockLog) OnEventf(_ string, _ ...interface{}) {}
