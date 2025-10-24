@@ -746,23 +746,23 @@ func (s *SessionSuite) TestOnAdminConnectRefreshOnLogon() {
 
 func (s *SessionSuite) TestOnAdminConnectError() {
 	dbError := fmt.Errorf("db error")
-		s.SetupTest()
-		errChannel := make(chan error, 1)
-		s.session.RefreshOnLogon = true
-		adminMsg := connect{
-			messageOut: s.Receiver.sendChannel,
-			err:        errChannel,
-		}
-		s.session.State = latentState{}
-		s.session.InitiateLogon = true
-		s.MockStore.On("Refresh").Return(dbError)
-		s.MockApp.On("ToAdmin")
-		s.session.onAdmin(adminMsg)
+	s.SetupTest()
+	errChannel := make(chan error, 1)
+	s.session.RefreshOnLogon = true
+	adminMsg := connect{
+		messageOut: s.Receiver.sendChannel,
+		err:        errChannel,
+	}
+	s.session.State = latentState{}
+	s.session.InitiateLogon = true
+	s.MockStore.On("Refresh").Return(dbError)
+	s.MockApp.On("ToAdmin")
+	s.session.onAdmin(adminMsg)
 
-		err := <-errChannel
-		s.Assert().Equal(err, dbError)
+	err := <-errChannel
+	s.Assert().Equal(err, dbError)
 
-		s.MockStore.AssertExpectations(s.T())
+	s.MockStore.AssertExpectations(s.T())
 
 }
 
